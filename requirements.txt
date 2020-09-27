@@ -1,0 +1,13 @@
+bs4
+lxml
+requests
+openpyxl
+googletrans
+python-dateutil
+jinja2
+w3lib
+nltk
+click
+coloredlogs
+prettytable
+impact_factor
