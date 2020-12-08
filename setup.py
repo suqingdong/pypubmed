@@ -4,8 +4,6 @@ from setuptools import setup, find_packages
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-from kegg_viewer.bin.main import __author__, __author_email__
-from kegg_viewer.version.version import __version__
 
 
 setup(

@@ -1,13 +1,12 @@
-bs4
 lxml
-requests
 openpyxl
-googletrans
+colorama
 python-dateutil
 jinja2
 w3lib
-nltk
 click
-coloredlogs
 prettytable
+webrequests
 impact_factor
+simple-loggers
+simple-googletrans

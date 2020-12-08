@@ -8,18 +8,20 @@ import textwrap
 import datetime
 
 import click
+import tqdm
 import prettytable
 
 from dateutil.parser import parse as date_parse
 
 from impact_factor import ImpactFactor
+from simple_googletrans import GoogleTrans
+from simple_loggers import SimpleLogger
+from webrequests import WebRequest
 
-from pypubmed.util.logger import MyLogger
-from pypubmed.util.web_request import WebRequest as WR
+
 from pypubmed.util import xml_parser
 from pypubmed.core.article import Article
 
-from pypubmed.core.translate import Translate
 
 
 class Eutils(object):
@@ -35,14 +37,14 @@ class Eutils(object):
     """
     base_url = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/'
 
-    logger = MyLogger('Eutils')
+    logger = SimpleLogger('Eutils')
 
     def __init__(self, db='pubmed', api_key=None, **kwargs):
         self.db = db
         self.api_key = api_key or os.getenv('NCBI_API_KEY')
         self.validate_api_key()
         self.IF = ImpactFactor()
-        self.TR = Translate()
+        self.TR = GoogleTrans()
 
     def parse_params(self, **kwargs):
         """
@@ -70,7 +72,7 @@ class Eutils(object):
         """
         url = self.base_url + 'esearch.fcgi'
         params = self.parse_params(term=term, retmode='json', retstart=retstart, retmax=retmax, **kwargs)
-        result = WR.get_response(url, params=params).json()['esearchresult']
+        result = WebRequest.get_response(url, params=params).json()['esearchresult']
 
         if head:
             return result
@@ -81,7 +83,7 @@ class Eutils(object):
         while int(result['retstart']) + int(result['retmax']) < int(result['count']):
             retstart = int(result['retstart']) + int(result['retmax'])
             params = self.parse_params(term=term, retmode='json', retstart=retstart, retmax=retmax, **kwargs)
-            result = WR.get_response(url, params=params).json()['esearchresult']
+            result = WebRequest.get_response(url, params=params).json()['esearchresult']
             idlist += result['idlist']
 
         if idlist:
@@ -101,20 +103,20 @@ class Eutils(object):
 
         self.logger.info('fetching start: total {}, batch_size: {}'.format(len(ids), batch_size))
 
-        # with tqdm.tqdm(total=len(ids), unit='articles', desc='Fetching', ncols=80, leave=False) as pbar:
-        with click.progressbar(length=len(ids), show_percent=True, empty_char=' ', fill_char='>') as pbar:
+        with tqdm.tqdm(total=len(ids), unit='articles', desc='Fetching', ncols=80, leave=False) as pbar:
+        # with click.progressbar(length=len(ids), show_percent=True, empty_char=' ', fill_char='>') as pbar:
             for n in range(0, len(ids), batch_size):
                 _id = ','.join(ids[n:n+batch_size])
                 if show_process:
                     end =  n + batch_size if n + batch_size <= len(ids) else len(ids)
-                    # pbar.set_description('Fetching {}-{}'.format(n+1, end))
-                    pbar.label = 'Fetching {}-{}'.format(n+1, end)
+                    pbar.set_description('Fetching {}-{}'.format(n+1, end))
+                    # pbar.label = 'Fetching {}-{}'.format(n+1, end)
                     pbar.update(batch_size)
                 n += batch_size
 
                 params = self.parse_params(id=_id, retmode='xml')
 
-                xml = WR.get_response(url, params=params).text
+                xml = WebRequest.get_response(url, params=params).text
                 
                 for context in xml_parser.parse(xml):
                     article = Article(**context)
@@ -131,7 +133,7 @@ class Eutils(object):
         """
         url = self.base_url + 'einfo.fcgi'
         params = self.parse_params(retmode='json', **kwargs)
-        info = WR.get_response(url, params=params).json()
+        info = WebRequest.get_response(url, params=params).json()
         return info
 
     def elink(self, ids, dbfrom='pubmed', cmd='neighbor', **kwargs):
@@ -156,7 +158,7 @@ class Eutils(object):
         """
         url = self.base_url + 'elink.fcgi'
         params = self.parse_params(retmode='json', id=ids, dbfrom=dbfrom, cmd=cmd,  **kwargs)
-        result = WR.get_response(url, params=params).json()
+        result = WebRequest.get_response(url, params=params).json()
         return result
 
     def get_cited(self, _id, dbfrom='pubmed', cmd='neighbor'):
@@ -202,7 +204,6 @@ class Eutils(object):
         click.secho(str(table), fg='bright_blue')
 
         return fields
-
 
     def validate_api_key(self):
         """
@@ -255,6 +256,6 @@ class Eutils(object):
                 article.cited = self.get_cited(article.pmid)
                 
             if translate:
+                print(article)
                 article.abstract_cn = self.TR.translate(article.abstract)
             yield article
-

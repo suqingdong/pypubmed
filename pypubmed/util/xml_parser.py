@@ -132,7 +132,7 @@ def parse(xml):
 
 if __name__ == '__main__':
     import json
-    from web_request import WebRequest
+    from webrequests import WebRequest
     
     url = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id=17284678,9997&retmode=xml'
     resp = WebRequest.get_response(url)

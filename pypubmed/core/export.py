@@ -4,13 +4,14 @@ import openpyxl
 from openpyxl.utils import get_column_letter
 from openpyxl.styles import PatternFill, Font, Color, colors, Alignment, Border, Side
 
+from simple_loggers import SimpleLogger
+
 from pypubmed.util import safe_open
-from pypubmed.util.logger import MyLogger
 
 
 class Export(object):
 
-    logger = MyLogger('Export')
+    logger = SimpleLogger('Export')
 
     def __init__(self, data, outfile='out.xlsx', outtype=None, fields=None, **kwargs):
         self.outfile = outfile

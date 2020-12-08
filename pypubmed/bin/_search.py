@@ -7,12 +7,12 @@ from pypubmed.core.eutils import Eutils
 from pypubmed.core.export import Export
 
 
-@click.command(no_args_is_help=True, short_help='search with pmid or a term', help='Search Tools')
+@click.command(short_help='search with pmid or a term', help='Search Tools')
 @click.option('-k', '--api-key', help='the api_key of NCBI Pubmed, NCBI_API_KEY environment is available', envvar='NCBI_API_KEY')
 @click.option('-c', '--cited', help='get cited information', default=False, is_flag=True)
 @click.option('-n', '--no-translate', help='do not translate the abstract', default=False, is_flag=True)
 @click.option('-p', '--show-process', help='show processing', default=False, is_flag=True)
-@click.option('-b', '--batch-size', help='the batch size for efetch', default=10, type=int)
+@click.option('-b', '--batch-size', help='the batch size for efetch', default=10, type=int, show_default=True)
 @click.option('-min', '--min-factor', help='filter with IF', type=float)
 @click.option('-l', '--limit', help='limit the count of output', type=int)
 @click.option('-f', '--fields', help='the fields to export')
@@ -71,9 +71,3 @@ def advance_search(**kwargs):
     click.secho('final query box: {}'.format(query_box), fg='bright_cyan')
     res = e.esearch(query_box, retmax=1, head=True)
     click.secho('{count} articles found with this query box.'.format(**res), fg='yellow')
-
-
-
-if __name__ == '__main__':
-    search()
-    
