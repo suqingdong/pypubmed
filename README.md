@@ -1,12 +1,13 @@
 # NCBI Pubmed Toolkits
 ---
 ## Requirements
-- Python3
+---
+- Python3.6+
 
 ---
 ## Installation
 ```bash
-pip isntall pypubmed
+pip3 isntall pypubmed
 ```
 
 ---
@@ -14,32 +15,21 @@ pip isntall pypubmed
 ### `search`
 > search Pubmed with term
 ```bash
+pypubmed search --help
 ```
 
-### `citation`
-> generate citation for given PMID
+### `advance-search`
+> search Pubmed with term
 ```bash
+pypubmed advance-search --help
 ```
 
-### `translate`
-> translate text with googletrans
+### `citations`
+> generate citations for given PMID
 ```bash
+pypubmed citations --help
 ```
 
-### `pdf`
-> download pdf if available for given PMID
-```bash
-```
-
-### `config`
-> set api_key etc.
-```bash
-```
-
-### `serve`
-> start a server
-```bash
-```
 
 ---
 ## Documents

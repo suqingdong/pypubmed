@@ -1,5 +1,6 @@
 {
     "author": "suqingdong",
     "author_email": "1078595229@qq.com",
+    "desc": "A Python Toolkits for NCBI Pubmed",
     "version": "1.0.1"
 }

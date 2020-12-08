@@ -256,6 +256,5 @@ class Eutils(object):
                 article.cited = self.get_cited(article.pmid)
                 
             if translate:
-                print(article)
                 article.abstract_cn = self.TR.translate(article.abstract)
             yield article
