@@ -39,7 +39,7 @@ def advance_search(obj, **kwargs):
 
     query_box = ''
     while True:
-        number = click.prompt('>>> please choose a number of field', type=int, default=2)
+        number = click.prompt('>>> please choose a number of field', type=int, default=48)
         field = fields[number][1]
         click.secho('your choice is: {number} - {field}'.format(**locals()), fg='cyan')
 
