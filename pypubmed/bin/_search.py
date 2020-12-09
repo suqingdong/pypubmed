@@ -7,7 +7,7 @@ from pypubmed.core.eutils import Eutils
 from pypubmed.core.export import Export
 
 
-@click.command(short_help='search with pmid or a term', help='Search Tools')
+@click.command(help='search with pmid or a term')
 @click.option('-c', '--cited', help='get cited information', default=False, is_flag=True)
 @click.option('-n', '--no-translate', help='do not translate the abstract', default=False, is_flag=True)
 @click.option('-b', '--batch-size', help='the batch size for efetch', default=10, type=int, show_default=True)
@@ -31,7 +31,7 @@ def search(obj, **kwargs):
     Export(data, **kwargs).export()
 
 
-@click.command(short_help='generate advance search string', help='Search Advance')
+@click.command(help='generate advance search string')
 @click.pass_obj
 def advance_search(obj, **kwargs):
     e = Eutils(api_key=obj['api_key'])

@@ -234,7 +234,7 @@ class Eutils(object):
                 - file with pmid
         """
         if os.path.isfile(term):
-            idlist = [open(term).read().split()]
+            idlist = open(term).read().strip().split()
         elif all(each.isdigit() for each in term.split(',')):
             idlist = term.split(',')
         else:

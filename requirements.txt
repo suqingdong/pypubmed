@@ -4,6 +4,7 @@ colorama
 python-dateutil
 jinja2
 w3lib
+tqdm
 click
 prettytable
 webrequests

@@ -15,10 +15,7 @@ examples:\n
     citations 1 2 3 -m -f apa\n
 '''
 
-@click.command(name='citations',
-               epilog=__epilog__,
-               short_help='generate citations for given pmids',
-               help='Citations Tools')
+@click.command(name='citations', epilog=__epilog__, help='generate citations for given pmids')
 @click.option('-m', '--manual', help='cite with manual citations, default with ncbi citations', default=False, is_flag=True)
 @click.option('-f', '--fmt', help='the format of citation', type=click.Choice('ama mla apa nlm'.split()), default='ama')
 @click.option('-o', '--outfile', help='the output filename [stdout]')
@@ -38,7 +35,7 @@ def citations_cli(obj, **kwargs):
     out = open(kwargs['outfile'], 'w') if kwargs['outfile'] else sys.stdout
     with out:
         if kwargs['manual']:
-            e = Eutils(api_key=kwargs['api_key'])
+            e = Eutils(api_key=obj['api_key'])
             articles = e.efetch(pmid_list)
 
             click.echo('\n', err=True)

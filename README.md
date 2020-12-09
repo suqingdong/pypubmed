@@ -34,4 +34,3 @@ pypubmed citations --help
 ---
 ## Documents
 > https://pypubmed.readthedocs.io/en/latest/
-
