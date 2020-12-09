@@ -7,6 +7,7 @@ import click
 from ._search import search, advance_search
 from ._citations import citations_cli
 from pypubmed import version_info
+from pypubmed.core.eutils import Eutils
 
 
 log_level_maps = {
@@ -21,7 +22,7 @@ contact: {author} <{author_email}>
 '''.format(**version_info), fg='bright_black')
 
 @click.group(epilog=__epilog__, help=click.style(version_info['desc'], fg='bright_blue', bold=True))
-@click.option('-l', '--log-level', help='the mode of log',
+@click.option('-l', '--log-level', help='the mode of loggging',
               show_default=True, default='debug',
               type=click.Choice(log_level_maps.keys()))
 @click.option('-k', '--api-key', help='the api_key of NCBI Pubmed, NCBI_API_KEY environment is available',
@@ -29,8 +30,13 @@ contact: {author} <{author_email}>
 @click.version_option(version=version_info['version'], prog_name='pypubmed')
 @click.pass_context
 def cli(ctx, **kwargs):
+
     kwargs['log_level'] = log_level_maps[kwargs['log_level']]
-    ctx.obj = kwargs
+    e = Eutils(api_key=kwargs['api_key'])
+    e.logger.level = int(kwargs['log_level'])
+    ctx.obj = {
+        'eutils': e
+    }
 
 
 def main():

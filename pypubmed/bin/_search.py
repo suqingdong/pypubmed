@@ -3,7 +3,6 @@ import datetime
 
 from dateutil.parser import parse as date_parse
 
-from pypubmed.core.eutils import Eutils
 from pypubmed.core.export import Export
 
 
@@ -18,13 +17,12 @@ from pypubmed.core.export import Export
 @click.argument('term', nargs=1)
 @click.pass_obj
 def search(obj, **kwargs):
-    e = Eutils(api_key=obj['api_key'])
-    e.logger.level = int(obj['log_level'])
-    articles = e.search(translate=not kwargs['no_translate'], **kwargs)
+    
+    articles = obj['eutils'].search(translate=not kwargs['no_translate'], **kwargs)
 
     data = []
     for n, article in enumerate(articles, 1):
-        e.logger.debug('{}. {}'.format(n, article))
+        obj['eutils'].logger.debug('{}. {}'.format(n, article))
         data.append(article.to_dict())
         if kwargs['limit'] and n >= kwargs['limit']:
             break
@@ -34,8 +32,7 @@ def search(obj, **kwargs):
 @click.command(help='generate advance search string')
 @click.pass_obj
 def advance_search(obj, **kwargs):
-    e = Eutils(api_key=obj['api_key'])
-    fields = e.validate_fields()
+    fields = obj['eutils'].validate_fields()
 
     query_box = ''
     while True:
@@ -64,10 +61,13 @@ def advance_search(obj, **kwargs):
 
         click.secho('query box now: ' + query_box, fg='bright_green')
 
-        finish = click.prompt('input finish?', type=click.Choice('yn'), default='n')
-        if finish == 'y':
+        if click.confirm('input finish?'):
             break
 
     click.secho('final query box: {}'.format(query_box), fg='bright_cyan')
-    res = e.esearch(query_box, retmax=1, head=True)
-    click.secho('{count} articles found with this query box.'.format(**res), fg='yellow')
+    res = obj['eutils'].esearch(query_box, retmax=1, head=True)
+    details = []
+    for each in res['translationstack']:
+        if isinstance(each, dict):
+            details += ['{term}:{count}'.format(**each)]
+    click.secho('count:\t{count}\nquery:\t{querytranslation}\ndetail:\t{detail}'.format(detail=', '.join(details), **res), fg='yellow')
