@@ -60,7 +60,7 @@ class Eutils(object):
 
         return params
 
-    def esearch(self, term, retstart=0, retmax=250, head=False, **kwargs):
+    def esearch(self, term, retstart=0, retmax=250, head=False, limit=None, **kwargs):
         """
             https://www.ncbi.nlm.nih.gov/books/NBK25499/#chapter4.ESearch
 
@@ -80,6 +80,8 @@ class Eutils(object):
         idlist = result['idlist']
 
         while int(result['retstart']) + int(result['retmax']) < int(result['count']):
+            if limit and int(result['retstart']) + int(result['retmax']) > limit:
+                break
             retstart = int(result['retstart']) + int(result['retmax'])
             params = self.parse_params(term=term, retmode='json', retstart=retstart, retmax=retmax, **kwargs)
             result = WebRequest.get_response(url, params=params).json()['esearchresult']
@@ -223,7 +225,7 @@ class Eutils(object):
         else:
             self.logger.info('\x1b[1;3;32mValid api_key: {}\x1b[0m'.format(self.api_key))
 
-    def search(self, term, cited=True, translate=True, impact_factor=True, min_factor=None, **kwargs):
+    def search(self, term, cited=True, translate=True, impact_factor=True, min_factor=None, limit=None, **kwargs):
         """
             term:
                 - string, eg. 'ngs AND disease'
@@ -235,7 +237,7 @@ class Eutils(object):
         elif all(each.isdigit() for each in term.split(',')):
             idlist = term.split(',')
         else:
-            idlist = self.esearch(term)
+            idlist = self.esearch(term, limit=limit)
 
         # print(kwargs);exit()
 
