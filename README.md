@@ -1,16 +1,13 @@
 # NCBI Pubmed Toolkits
----
+
 ## Requirements
----
 - Python3.6+
 
----
 ## Installation
 ```bash
 pip3 isntall pypubmed
 ```
 
----
 ## Usage
 ### `search`
 > search Pubmed with term
@@ -19,7 +16,7 @@ pypubmed search --help
 ```
 
 ### `advance-search`
-> search Pubmed with term
+> advance search builder
 ```bash
 pypubmed advance-search --help
 ```
@@ -30,7 +27,10 @@ pypubmed advance-search --help
 pypubmed citations --help
 ```
 
+## Todos
+[ ] HTML output
+[ ] PDF downloader
 
----
+
 ## Documents
 > https://pypubmed.readthedocs.io/en/latest/
