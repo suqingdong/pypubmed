@@ -8,7 +8,6 @@ import textwrap
 import datetime
 
 import click
-import tqdm
 import prettytable
 
 from dateutil.parser import parse as date_parse
@@ -103,14 +102,12 @@ class Eutils(object):
 
         self.logger.info('fetching start: total {}, batch_size: {}'.format(len(ids), batch_size))
 
-        with tqdm.tqdm(total=len(ids), unit='articles', desc='Fetching', ncols=80, leave=False) as pbar:
-        # with click.progressbar(length=len(ids), show_percent=True, empty_char=' ', fill_char='>') as pbar:
+        with click.progressbar(length=len(ids), show_percent=True, empty_char=' ', fill_char='>') as pbar:
             for n in range(0, len(ids), batch_size):
                 _id = ','.join(ids[n:n+batch_size])
                 if show_process:
                     end =  n + batch_size if n + batch_size <= len(ids) else len(ids)
-                    pbar.set_description('Fetching {}-{}'.format(n+1, end))
-                    # pbar.label = 'Fetching {}-{}'.format(n+1, end)
+                    pbar.label = 'Fetching {}-{}'.format(n+1, end)
                     pbar.update(batch_size)
                 n += batch_size
 
