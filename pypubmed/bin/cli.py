@@ -3,20 +3,10 @@ import sys
 import logging
 
 import click
-import colorama
 
 from ._search import search, advance_search
 from ._citations import citations_cli
-from pypubmed import version_info, __doc__
-
-
-PY2 = sys.version_info.major == 2
-if PY2:
-    reload(sys)
-    sys.setdefaultencoding('utf-8')
-
-
-colorama.init()
+from pypubmed import version_info
 
 
 log_level_maps = {
@@ -30,16 +20,12 @@ __epilog__ = click.style('''
 contact: {author} <{author_email}>
 '''.format(**version_info), fg='bright_black')
 
-@click.group(epilog=__epilog__, help=click.style(__doc__, fg='bright_blue', bold=True))
-@click.option('-l', '--log-level',
-              help='the mode of log',
-              show_default=True,
-              default='debug',
+@click.group(epilog=__epilog__, help=click.style(version_info['desc'], fg='bright_blue', bold=True))
+@click.option('-l', '--log-level', help='the mode of log',
+              show_default=True, default='debug',
               type=click.Choice(log_level_maps.keys()))
-@click.option('-k', '--api-key',
-              help='the api_key of NCBI Pubmed, NCBI_API_KEY environment is available',
-              envvar='NCBI_API_KEY',
-              show_envvar=True)
+@click.option('-k', '--api-key', help='the api_key of NCBI Pubmed, NCBI_API_KEY environment is available',
+              envvar='NCBI_API_KEY', show_envvar=True)
 @click.version_option(version=version_info['version'], prog_name='pypubmed')
 @click.pass_context
 def cli(ctx, **kwargs):

@@ -1,15 +1,13 @@
-"""====================\n
-NCBI Pubmed ToolKits\n
-====================
+"""
+    Toolkits for NCBI Pubmed
 """
 import os
 import json
 
-BASE_DIR = os.path.dirname(os.path.realpath(__file__))
+import colorama
 
+BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 version_info = json.load(open(os.path.join(BASE_DIR, 'version', 'version.json')))
 
 
-
-if __name__ == '__main__':
-    print(version_info)
+colorama.init()
