@@ -20,6 +20,7 @@ pypubmed search --help
 ```bash
 pypubmed advance-search --help
 ```
+![](https://suqingdong.github.io/pypubmed/src/advance-search.png)
 
 ### `citations`
 > generate citations for given PMID
