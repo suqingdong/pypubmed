@@ -28,8 +28,10 @@ pypubmed citations --help
 ```
 
 ## Todos
-[ ] HTML output
-[ ] PDF downloader
+- [ ] HTML output
+- [ ] PDF downloader
+- [ ] GUI application
+- [ ] Local paper manager
 
 
 ## Documents
