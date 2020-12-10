@@ -4,6 +4,7 @@
 import os
 import sys
 import json
+import time
 import textwrap
 import datetime
 
@@ -22,7 +23,6 @@ from pypubmed.util import xml_parser
 from pypubmed.core.article import Article
 
 
-
 class Eutils(object):
     """
         params:
@@ -35,15 +35,14 @@ class Eutils(object):
             field       field for esearch
     """
     base_url = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/'
-
     logger = SimpleLogger('Eutils')
+    IF = ImpactFactor()
+    TR = GoogleTrans()
 
     def __init__(self, db='pubmed', api_key=None, **kwargs):
         self.db = db
-        self.api_key = api_key or os.getenv('NCBI_API_KEY')
+        self.api_key = api_key
         self.validate_api_key()
-        self.IF = ImpactFactor()
-        self.TR = GoogleTrans()
 
     def parse_params(self, **kwargs):
         """
@@ -76,7 +75,7 @@ class Eutils(object):
         if head:
             return result
 
-        self.logger.info('{count} articles found with term: \x1b[32m{querytranslation}\x1b[0m'.format(**result))
+        self.logger.info('{count} articles found with term: {querytranslation}'.format(**result))
         idlist = result['idlist']
 
         while int(result['retstart']) + int(result['retmax']) < int(result['count']):
@@ -132,7 +131,7 @@ class Eutils(object):
         """
         url = self.base_url + 'einfo.fcgi'
         params = self.parse_params(retmode='json', **kwargs)
-        info = WebRequest.get_response(url, params=params).json()
+        info = WebRequest.get_response(url, params=params, allowed_codes=[200, 400]).json()
         return info
 
     def elink(self, ids, dbfrom='pubmed', cmd='neighbor', **kwargs):
@@ -220,10 +219,10 @@ class Eutils(object):
 
         res = self.einfo()
         if 'error' in res:
-            self.logger.warning('invalid api_key, please check: {}'.format(self.api_key))
+            self.logger.warning(click.style('invalid api_key, please check: {}'.format(self.api_key), fg='yellow', bold=True))
             self.api_key = None
         else:
-            self.logger.info('\x1b[1;3;32mValid api_key: {}\x1b[0m'.format(self.api_key))
+            self.logger.info(click.style('Valid api_key: {}'.format(self.api_key), fg='green', bold=True))
 
     def search(self, term, cited=True, translate=True, impact_factor=True, min_factor=None, limit=None, **kwargs):
         """
@@ -255,5 +254,14 @@ class Eutils(object):
                 article.cited = self.get_cited(article.pmid)
                 
             if translate:
-                article.abstract_cn = self.TR.translate(article.abstract)
+                article.abstract_cn = 'translate failed'
+                n = 0
+                while n < 5:
+                    n += 1
+                    try:
+                        article.abstract_cn = self.TR.translate(article.abstract)
+                        break
+                    except Exception as e:
+                        print(e)
+                        time.sleep(3)
             yield article
