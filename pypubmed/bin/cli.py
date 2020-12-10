@@ -23,7 +23,7 @@ contact: {author} <{author_email}>
 
 @click.group(epilog=__epilog__, help=click.style(version_info['desc'], fg='bright_blue', bold=True))
 @click.option('-l', '--log-level', help='the mode of loggging',
-              show_default=True, default='info',
+              show_default=True, default='debug',
               type=click.Choice(log_level_maps.keys()))
 @click.option('-k', '--api-key', help='the api_key of NCBI Pubmed, NCBI_API_KEY environment is available',
               envvar='NCBI_API_KEY', show_envvar=True)

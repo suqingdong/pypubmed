@@ -1,3 +1,5 @@
+import os
+import re
 import click
 import datetime
 
@@ -66,8 +68,17 @@ def advance_search(obj, **kwargs):
 
     click.secho('final query box: {}'.format(query_box), fg='bright_cyan')
     res = obj['eutils'].esearch(query_box, retmax=1, head=True)
-    details = []
-    for each in res['translationstack']:
-        if isinstance(each, dict):
-            details += ['{term}:{count}'.format(**each)]
-    click.secho('count:\t{count}\nquery:\t{querytranslation}\ndetail:\t{detail}'.format(detail=', '.join(details), **res), fg='yellow')
+
+    if res['count']:
+        details = []
+        for each in res['translationstack']:
+            if isinstance(each, dict):
+                details += ['{term}:{count}'.format(**each)]
+        click.secho('count:\t{count}\nquery:\t{querytranslation}\ndetail:\t{detail}'.format(detail=', '.join(details), **res), fg='yellow')
+
+        if click.confirm('search with this query box?'):
+            outfile = re.sub(r'[\'"\(\)\[\]/ ]+', '_', query_box).strip('_') + '.xlsx'
+            outfile = click.prompt('output filename', default=outfile, show_default=True)
+            os.system('pypubmed search "{}" -o {}'.format(query_box, outfile))
+    else:
+        click.echo(res)

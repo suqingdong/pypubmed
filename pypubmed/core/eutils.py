@@ -209,20 +209,27 @@ class Eutils(object):
                 - E-utils users are allowed 3 requests/second without an API key.
                 - Create an API key to increase your e-utils limit to 10 requests/second.
         """
+        configfile = os.path.join(os.path.expanduser('~'), '.pypubmed.cfg')
+
         if not self.api_key:
-            msg = textwrap.dedent('''
-                API_KEY not found! Use eutils with a api_key is a good idea!
-                You can create one from: https://www.ncbi.nlm.nih.gov/account/settings/#accountSettingsApiKeyManagement
-                If you already have one, you can add it to your environment: export NCBI_API_KEY=xxxx''')
-            self.logger.warning(msg)
-            return
+            if os.path.isfile(configfile):
+                self.api_key = open(configfile).read().strip()
+            if not self.api_key:
+                msg = textwrap.dedent('''
+                    API_KEY not found! Use eutils with a api_key is a good idea!
+                    You can create one from: https://www.ncbi.nlm.nih.gov/account/settings/#accountSettingsApiKeyManagement
+                    If you already have one, you can add it to your environment: export NCBI_API_KEY=xxxx''')
+                self.logger.warning(msg)
+                return
 
         res = self.einfo()
         if 'error' in res:
-            self.logger.warning(click.style('invalid api_key, please check: {}'.format(self.api_key), fg='yellow', bold=True))
+            self.logger.warning('invalid api_key, please check: {}'.format(self.api_key))
             self.api_key = None
         else:
-            self.logger.info(click.style('Valid api_key: {}'.format(self.api_key), fg='green', bold=True))
+            self.logger.info('Valid api_key: {}'.format(self.api_key))
+            with open(configfile, 'w') as out:
+                out.write(self.api_key)
 
     def search(self, term, cited=True, translate=True, impact_factor=True, min_factor=None, limit=None, **kwargs):
         """
