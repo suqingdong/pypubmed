@@ -37,12 +37,12 @@ class Eutils(object):
     base_url = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/'
     logger = SimpleLogger('Eutils')
     IF = ImpactFactor()
-    TR = GoogleTrans()
 
-    def __init__(self, db='pubmed', api_key=None, **kwargs):
+    def __init__(self, db='pubmed', service_url='translate.google.cn', api_key=None, **kwargs):
         self.db = db
         self.api_key = api_key
         self.validate_api_key()
+        self.TR = GoogleTrans(service_url=service_url)
 
     def parse_params(self, **kwargs):
         """
