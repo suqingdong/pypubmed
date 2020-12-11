@@ -15,7 +15,7 @@ examples:\n
     citations 1 2 3 -m -f apa\n
 '''
 
-@click.command(name='citations', epilog=__epilog__, help='generate citations for given pmids')
+@click.command(name='citations', epilog=__epilog__, help=click.style('generate citations for given pmids', bold=True, fg='magenta'), no_args_is_help=True)
 @click.option('-m', '--manual', help='cite with manual citations, default with ncbi citations', default=False, is_flag=True)
 @click.option('-f', '--fmt', help='the format of citation', type=click.Choice('ama mla apa nlm'.split()), default='ama')
 @click.option('-o', '--outfile', help='the output filename [stdout]')

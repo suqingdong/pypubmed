@@ -7,8 +7,18 @@ from dateutil.parser import parse as date_parse
 
 from pypubmed.core.export import Export
 
+search_examples = click.style('''
+examples:
 
-@click.command(help='search with pmid or a term')
+    pypubmed search ngs -l 5 -o ngs.xlsx
+
+    pypubmed search 'NGS[Title] AND Disease[Title/Abstract]' -o ngs_disease.xlsx
+
+    pypubmed search 1,2,3,4
+
+    pypubmed search pmid_list.txt
+''', fg='yellow')
+@click.command(help=click.style('search with pmid or a term', bold=True, fg='green'), epilog=search_examples, no_args_is_help=True)
 @click.option('-c', '--cited', help='get cited information', default=False, is_flag=True)
 @click.option('-n', '--no-translate', help='do not translate the abstract', default=False, is_flag=True)
 @click.option('-b', '--batch-size', help='the batch size for efetch', default=10, type=int, show_default=True)
@@ -25,13 +35,22 @@ def search(obj, **kwargs):
     data = []
     for n, article in enumerate(articles, 1):
         obj['eutils'].logger.debug('{}. {}'.format(n, article))
+
+        # filter impact factor
+        if kwargs['min_factor'] and (article.impact_factor != '.' and article.impact_factor < kwargs['min_factor']):
+            continue
+
         data.append(article.to_dict())
         if kwargs['limit'] and n >= kwargs['limit']:
             break
+
+    if kwargs['min_factor']:
+        obj['eutils'].logger.info('A total of {} articles were found, {} remaining after filtering IF>={}'.format(n, len(data), kwargs['min_factor']))
+
     Export(data, **kwargs).export()
 
 
-@click.command(help='generate advance search string')
+@click.command(help=click.style('generate advance search string', bold=True, fg='cyan'))
 @click.pass_obj
 def advance_search(obj, **kwargs):
     fields = obj['eutils'].validate_fields()

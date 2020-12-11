@@ -17,11 +17,11 @@ log_level_maps = {
     'error': logging.ERROR,
 }
 
-__epilog__ = click.style('''
-contact: {author} <{author_email}>
-'''.format(**version_info), fg='bright_black')
+__epilog__ = click.style('contact: {author} <{author_email}>'.format(**version_info), fg='bright_black')
 
-@click.group(epilog=__epilog__, help=click.style(version_info['desc'], fg='bright_blue', bold=True))
+CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
+
+@click.group(context_settings=CONTEXT_SETTINGS, epilog=__epilog__, help=click.style(version_info['desc'], fg='bright_blue', bold=True))
 @click.option('-l', '--log-level', help='the mode of loggging',
               show_default=True, default='debug',
               type=click.Choice(log_level_maps.keys()))

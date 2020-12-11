@@ -231,7 +231,7 @@ class Eutils(object):
             with open(configfile, 'w') as out:
                 out.write(self.api_key)
 
-    def search(self, term, cited=True, translate=True, impact_factor=True, min_factor=None, limit=None, **kwargs):
+    def search(self, term, cited=True, translate=True, impact_factor=True, limit=None, **kwargs):
         """
             term:
                 - string, eg. 'ngs AND disease'
@@ -252,10 +252,6 @@ class Eutils(object):
             if impact_factor:
                 res = self.IF.search(article.issn) or self.IF.search(article.e_issn)
                 article.impact_factor = res['factor'] if res else '.'
-
-                # filter impact factor
-                if min_factor and (article.impact_factor != '.' and article.impact_factor < min_factor):
-                    continue
 
             if cited:
                 article.cited = self.get_cited(article.pmid)
