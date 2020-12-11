@@ -37,7 +37,7 @@ class Export(object):
         
         self.logger.info('save file: {}'.format(self.outfile))
 
-    def write_title(self, sheet, titles, fg_color=colors.WHITE, bg_color=colors.BLACK, border=True, bold=True, width=18, size=12):
+    def write_title(self, sheet, titles, fg_color=colors.BLACK, bg_color=colors.WHITE, border=True, bold=True, width=18, size=12):
         for col, value in enumerate(titles, 1):
 
                 w = width * 4 if value in ('abstract', 'abstract_cn') else width
