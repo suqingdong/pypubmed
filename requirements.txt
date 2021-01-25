@@ -1,7 +1,6 @@
 lxml
 openpyxl
 python-dateutil
-jinja2
 w3lib
 click
 prettytable

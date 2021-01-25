@@ -117,10 +117,21 @@ def parse(xml):
 
             context['abstract'] = parse_abstract(Article.xpath('Abstract/AbstractText'))
             
+            author_mail = []
+
             author_list = []
             for author in Article.xpath('AuthorList/Author'):
                 name = [each.text for each in author.xpath('*')][:3]  # LastName, ForeName, Initials
                 author_list.append(name)
+                affiliation = '\n'.join(author.xpath('AffiliationInfo/Affiliation/text()'))
+                print(affiliation)
+                mail = re.findall(r'([^\s]+?@.+)\.', str(affiliation))
+                if mail:
+                    mail = '{}:{}'.format(' '.join(name), mail[0])
+                    author_mail.append(mail)
+
+            context['author_mail'] = '\n'.join(author_mail) or '.'
+
             context['authors'] = author_list
 
             context['pub_types'] = Article.xpath('PublicationTypeList/PublicationType/text()')
@@ -134,7 +145,10 @@ if __name__ == '__main__':
     import json
     from webrequests import WebRequest
     
-    url = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id=17284678,9997&retmode=xml'
+    pmid = '17284678,9997'
+    pmid = '28143587'
+    
+    url = f'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id={pmid}&retmode=xml'
     resp = WebRequest.get_response(url)
     for context in parse(resp.text):
         print(json.dumps(context, indent=2))
