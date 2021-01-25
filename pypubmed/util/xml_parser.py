@@ -124,7 +124,6 @@ def parse(xml):
                 name = [each.text for each in author.xpath('*')][:3]  # LastName, ForeName, Initials
                 author_list.append(name)
                 affiliation = '\n'.join(author.xpath('AffiliationInfo/Affiliation/text()'))
-                print(affiliation)
                 mail = re.findall(r'([^\s]+?@.+)\.', str(affiliation))
                 if mail:
                     mail = '{}:{}'.format(' '.join(name), mail[0])
