@@ -130,6 +130,8 @@ def parse(xml):
                     author_mail.append(mail)
 
             context['author_mail'] = '\n'.join(author_mail) or '.'
+            context['author_first'] = Article.xpath('AuthorList/Author/AffiliationInfo/Affiliation/text()')[0]
+            context['author_last'] = Article.xpath('AuthorList/Author/AffiliationInfo/Affiliation/text()')[-1]
 
             context['authors'] = author_list
 
