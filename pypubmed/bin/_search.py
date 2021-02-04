@@ -49,6 +49,11 @@ def search(obj, **kwargs):
 
         data.append(article.to_dict())
 
+        # if not kwargs['limit'] and n > 10:
+        #     obj['eutils'].logger.warning('Too many results, just output the first {limit}. '
+        #                                  'You can limit the count with option "-l/--limit", '
+        #                                  'or simplify your term with sub-command "advance-search"'.format(**kwargs))
+        #     break
         if kwargs['limit'] and n >= kwargs['limit']:
             break
 

@@ -76,6 +76,12 @@ class Eutils(object):
             return result
 
         self.logger.info('{count} articles found with term: {querytranslation}'.format(**result))
+
+        if limit is None and int(result['count']) > 250:
+            self.logger.warning('too many results, you can limit output with option "-l/--limit N", '
+                                'or simplify your input with sub-command "advance-search" ')
+            exit(1)
+
         idlist = result['idlist']
 
         while int(result['retstart']) + int(result['retmax']) < int(result['count']):
@@ -86,10 +92,15 @@ class Eutils(object):
             result = WebRequest.get_response(url, params=params).json()['esearchresult']
             idlist += result['idlist']
 
+        if limit:
+            self.logger.info('limit {} from {}'.format(limit, result['count']))
+            idlist = idlist[:limit]
+
         if idlist:
-            self.logger.info('idlist: {} ...'.format(', '.join(idlist[:10])))
+            self.logger.debug('idlist: {} ...'.format(', '.join(idlist[:10])))
         else:
             self.logger.warning('no result for term: {}'.format(term))
+
         return idlist
 
     def efetch(self, ids, batch_size=5, show_process=False, **kwargs):
@@ -110,6 +121,7 @@ class Eutils(object):
                     end =  n + batch_size if n + batch_size <= len(ids) else len(ids)
                     pbar.label = 'Fetching {}-{}'.format(n+1, end)
                     pbar.update(batch_size)
+
                 n += batch_size
 
                 params = self.parse_params(id=_id, retmode='xml')
