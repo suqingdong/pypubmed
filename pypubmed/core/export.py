@@ -13,10 +13,22 @@ class Export(object):
 
     logger = SimpleLogger('Export')
 
-    def __init__(self, data, outfile='out.xlsx', outtype=None, fields=None, **kwargs):
+    def __init__(self, data, outfile='out.xlsx', outtype=None, fields=None, fillna='.', **kwargs):
         self.outfile = outfile
         self.outtype = outtype or outfile.split('.')[-1]
-        self.data = list(self.filter_data(data, fields)) if fields else data
+        # self.data = list(self.filter_data(data, fields)) if fields else data
+        self.data = list(self.reformat_data(data, fields=fields, fillna=fillna))
+
+    def reformat_data(self, data, fields, fillna):
+
+        if fields:
+            field_list = fields.strip(',').split(',')
+        else:
+            field_list = data[0].keys()
+
+        for context in data:
+            out_ctx = {k: v or fillna for k, v in context.items() if k in field_list}
+            yield out_ctx
 
     def filter_data(self, data, fields):
         fields = fields.strip(',').split(',')
