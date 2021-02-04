@@ -132,7 +132,7 @@ class Export(object):
                 _ = sheet.cell(row, col, value=value)
                 _.fill = PatternFill(start_color=color, end_color=color, fill_type="solid")
 
-                if key in ('pmid', 'pmc', 'doi') and value != '.':
+                if key in ('pmid', 'pmc', 'doi') and value not in ('.', None):
                     _.hyperlink = self.add_hyperlink(key, value)
                     _.font = Font(color=colors.BLUE, italic=True)
 
