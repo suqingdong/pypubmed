@@ -26,6 +26,7 @@ examples:
 @click.option('-l', '--limit', help='limit the count of output', type=int)
 @click.option('-f', '--fields', help='the fields to export')
 @click.option('-o', '--outfile', help='the output filename', default='pubmed.xlsx', show_default=True)
+@click.option('-a', '--author', help='export information of authors', is_flag=True, hidden=True)
 @click.argument('term', nargs=1)
 @click.pass_obj
 def search(obj, **kwargs):
@@ -40,7 +41,14 @@ def search(obj, **kwargs):
         if kwargs['min_factor'] and (article.impact_factor != '.' and article.impact_factor < kwargs['min_factor']):
             continue
 
+        # export author information or not
+        if not kwargs['author']:
+            del article.author_mail
+            del article.author_first
+            del article.author_last
+
         data.append(article.to_dict())
+
         if kwargs['limit'] and n >= kwargs['limit']:
             break
 
