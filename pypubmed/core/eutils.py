@@ -240,7 +240,7 @@ class Eutils(object):
             with open(configfile, 'w') as out:
                 out.write(self.api_key)
 
-    def search(self, term, cited=True, translate=True, impact_factor=True, **kwargs):
+    def search(self, term, cited=True, translate=True, impact_factor=True, translate_cache=None, **kwargs):
         """
             term:
                 - string, eg. 'ngs AND disease'
@@ -264,16 +264,19 @@ class Eutils(object):
 
             if cited:
                 article.cited = self.get_cited(article.pmid)
-                
+
             if translate:
-                article.abstract_cn = 'translate failed'
-                n = 0
-                while n < 5:
-                    n += 1
-                    try:
-                        article.abstract_cn = self.TR.translate(article.abstract)
-                        break
-                    except Exception as e:
-                        print(e)
-                        time.sleep(3)
+                if translate_cache and translate_cache.get(article.pmid):
+                    article.abstract_cn = translate_cache.get(article.pmid)
+                else:
+                    article.abstract_cn = 'translate failed'
+                    n = 0
+                    while n < 5:
+                        n += 1
+                        try:
+                            article.abstract_cn = self.TR.translate(article.abstract)
+                            break
+                        except Exception as e:
+                            print(e)
+                            time.sleep(3)
             yield article

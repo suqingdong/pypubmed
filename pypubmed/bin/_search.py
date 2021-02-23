@@ -6,6 +6,7 @@ import pickle
 
 from dateutil.parser import parse as date_parse
 
+from pypubmed.util import safe_open
 from pypubmed.core.export import Export
 
 search_examples = click.style('''
@@ -29,35 +30,54 @@ examples:
 @click.option('-o', '--outfile', help='the output filename', default='pubmed.xlsx', show_default=True)
 @click.option('-a', '--author', help='export information of authors', is_flag=True, hidden=True)
 
+@click.option('-c', '--cache', help='store translated result to a cache file', is_flag=True)
 @click.option('-s', '--retstart', help='the number of start', type=int, default=0, show_default=True)
 
 @click.argument('term', nargs=1)
 @click.pass_obj
 def search(obj, **kwargs):
     
-    articles = obj['eutils'].search(translate=not kwargs['no_translate'], **kwargs)
-
     data = []
-    for n, article in enumerate(articles, 1):
-        obj['eutils'].logger.debug('{}. {}'.format(n, article))
+    translate_cache = {}
+    cache_file = '.translate.cache.pkl'
+    if os.path.isfile(cache_file):
+        with safe_open(cache_file, 'rb') as f:
+            translate_cache = pickle.load(f)
 
-        # filter impact factor
-        if kwargs['min_factor'] and (article.impact_factor != '.' and article.impact_factor < kwargs['min_factor']):
-            continue
+    articles = obj['eutils'].search(translate=not kwargs['no_translate'], translate_cache=translate_cache, **kwargs)
 
-        # export author information or not
-        if not kwargs['author']:
-            del article.author_mail
-            del article.author_first
-            del article.author_last
+    try:
+        for n, article in enumerate(articles, 1):
+            obj['eutils'].logger.debug(f'{n}. {article}')
 
-        data.append(article.to_dict())
+            # store translated result to cache file
+            if kwargs['cache']:
+                translate_cache[article.pmid] = article.abstract_cn
 
-        if kwargs['limit'] and n >= kwargs['limit']:
-            break
+            # filter impact factor
+            if kwargs['min_factor'] and (article.impact_factor != '.' and article.impact_factor < kwargs['min_factor']):
+                continue
+
+            # export author information or not
+            if not kwargs['author']:
+                del article.author_mail
+                del article.author_first
+                del article.author_last
+
+            data.append(article.to_dict())
+
+            if kwargs['limit'] and n >= kwargs['limit']:
+                break
+    except KeyboardInterrupt:
+        pass
 
     if kwargs['min_factor']:
         obj['eutils'].logger.info('A total of {} articles were found, {} remaining after filtering IF>={}'.format(n, len(data), kwargs['min_factor']))
+
+    if kwargs['cache']:
+        with safe_open(cache_file, 'wb') as out:
+            pickle.dump(translate_cache, out)
+        obj['eutils'].logger.debug(f'save cache file: {cache_file}')
 
     Export(data, **kwargs).export()
 
@@ -71,33 +91,33 @@ def advance_search(obj, **kwargs):
     while True:
         number = click.prompt('>>> please choose a number of field', type=int, default=48)
         field = fields[number][1]
-        click.secho('your choice is: {number} - {field}'.format(**locals()), fg='cyan')
+        click.secho(f'your choice is: {number} - {field}', fg='cyan')
 
         if field.startswith('Date - '):
             start = click.prompt('>>> please enter the start date(YYYY-MM-DD)', value_proc=date_parse).strftime('%Y/%m/%d')
             end = click.prompt('>>> please enter the end date', default='3000', value_proc=date_parse)
             if end != '3000':
                 end = end.strftime('%Y/%m/%d')
-            term = '("{start}"[{field}] : "{end}"[{field}])'.format(**locals())
+            term = f'("{start}"[{field}] : "{end}"[{field}])'
         else:
             term = click.prompt('>>> please enter a search term')
             if field == 'All Fields':
-                term = '{term}'.format(**locals())
+                term = f'{term}'
             else:
-                term = '"{term}"[{field}]'.format(**locals())
+                term = f'"{term}"[{field}]'
 
         if not query_box:
             query_box = term
         else:
             logic = click.prompt('>>> please input the logic', type=click.Choice(['and', 'or', 'not']), default='and').upper()
-            query_box = '({query_box}) {logic} ({term})'.format(**locals())
+            query_box = f'({query_box}) {logic} ({term})'
 
         click.secho('query box now: ' + query_box, fg='bright_green')
 
         if click.confirm('input finish?'):
             break
 
-    click.secho('final query box: {}'.format(query_box), fg='bright_cyan')
+    click.secho(f'final query box: {query_box}', fg='bright_cyan')
     res = obj['eutils'].esearch(query_box, retmax=1, head=True)
 
     if res['count']:
@@ -110,6 +130,6 @@ def advance_search(obj, **kwargs):
         if click.confirm('search with this query box?'):
             outfile = re.sub(r'[\'"\(\)\[\]/ ]+', '_', query_box).strip('_') + '.xlsx'
             outfile = click.prompt('output filename', default=outfile, show_default=True)
-            os.system('pypubmed search "{}" -o {}'.format(query_box, outfile))
+            os.system(f'pypubmed search "{query_box}" -o {outfile}')
     else:
         click.echo(res)
