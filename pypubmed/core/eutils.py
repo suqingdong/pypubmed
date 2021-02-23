@@ -70,6 +70,9 @@ class Eutils(object):
         """
         url = self.base_url + 'esearch.fcgi'
         params = self.parse_params(term=term, retmode='json', retstart=retstart, retmax=retmax, **kwargs)
+
+        # print(params)
+
         result = WebRequest.get_response(url, params=params).json()['esearchresult']
 
         if head:
@@ -103,7 +106,7 @@ class Eutils(object):
 
         return idlist
 
-    def efetch(self, ids, batch_size=5, show_process=False, **kwargs):
+    def efetch(self, ids, batch_size=5, **kwargs):
         """
             https://www.ncbi.nlm.nih.gov/books/NBK25499/#chapter4.EFetch
 
@@ -114,23 +117,17 @@ class Eutils(object):
 
         self.logger.info('fetching start: total {}, batch_size: {}'.format(len(ids), batch_size))
 
-        with click.progressbar(length=len(ids), show_percent=True, empty_char=' ', fill_char='>') as pbar:
-            for n in range(0, len(ids), batch_size):
-                _id = ','.join(ids[n:n+batch_size])
-                if show_process:
-                    end =  n + batch_size if n + batch_size <= len(ids) else len(ids)
-                    pbar.label = 'Fetching {}-{}'.format(n+1, end)
-                    pbar.update(batch_size)
+        for n in range(0, len(ids), batch_size):
+            _id = ','.join(ids[n:n+batch_size])
 
-                n += batch_size
-
-                params = self.parse_params(id=_id, retmode='xml')
-
-                xml = WebRequest.get_response(url, params=params).text
-                
-                for context in xml_parser.parse(xml):
-                    article = Article(**context)
-                    yield article
+            self.logger.debug(f'fetching xml: {n+1} - {n+batch_size}')
+            params = self.parse_params(id=_id, retmode='xml')
+            xml = WebRequest.get_response(url, params=params).text
+            
+            self.logger.debug(f'parsing xml: {n+1} - {n+batch_size}')
+            for context in xml_parser.parse(xml):
+                article = Article(**context)
+                yield article
 
     def einfo(self, **kwargs):
         """
@@ -243,7 +240,7 @@ class Eutils(object):
             with open(configfile, 'w') as out:
                 out.write(self.api_key)
 
-    def search(self, term, cited=True, translate=True, impact_factor=True, limit=None, **kwargs):
+    def search(self, term, cited=True, translate=True, impact_factor=True, **kwargs):
         """
             term:
                 - string, eg. 'ngs AND disease'
@@ -255,7 +252,7 @@ class Eutils(object):
         elif all(each.isdigit() for each in term.split(',')):
             idlist = term.split(',')
         else:
-            idlist = self.esearch(term, limit=limit)
+            idlist = self.esearch(term, **kwargs)
 
         # print(kwargs);exit()
 

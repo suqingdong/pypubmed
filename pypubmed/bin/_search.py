@@ -2,6 +2,7 @@ import os
 import re
 import click
 import datetime
+import pickle
 
 from dateutil.parser import parse as date_parse
 
@@ -27,6 +28,9 @@ examples:
 @click.option('-f', '--fields', help='the fields to export')
 @click.option('-o', '--outfile', help='the output filename', default='pubmed.xlsx', show_default=True)
 @click.option('-a', '--author', help='export information of authors', is_flag=True, hidden=True)
+
+@click.option('-s', '--retstart', help='the number of start', type=int, default=0, show_default=True)
+
 @click.argument('term', nargs=1)
 @click.pass_obj
 def search(obj, **kwargs):
@@ -49,11 +53,6 @@ def search(obj, **kwargs):
 
         data.append(article.to_dict())
 
-        # if not kwargs['limit'] and n > 10:
-        #     obj['eutils'].logger.warning('Too many results, just output the first {limit}. '
-        #                                  'You can limit the count with option "-l/--limit", '
-        #                                  'or simplify your term with sub-command "advance-search"'.format(**kwargs))
-        #     break
         if kwargs['limit'] and n >= kwargs['limit']:
             break
 

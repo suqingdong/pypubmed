@@ -132,11 +132,11 @@ def parse(xml):
 
             context['author_mail'] = '\n'.join(author_mail) or '.'
             authors = Article.xpath('AuthorList/Author/AffiliationInfo/Affiliation/text()')
+            context['author_first'] = context['author_last'] = '.'
             if authors:
                 context['author_first'] = authors[0]
-                context['author_last'] = author[-1]
-            else:
-                context['author_first'] = context['author_last'] = '.'
+                if len(authors) > 1:
+                    context['author_last'] = authors[-1]
 
             context['authors'] = ',\n'.join(author_list)
 
@@ -153,6 +153,7 @@ if __name__ == '__main__':
     
     pmid = '17284678,9997'
     pmid = '28143587'
+    pmid = '33577981'
     
     url = f'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id={pmid}&retmode=xml'
     resp = WebRequest.get_response(url)

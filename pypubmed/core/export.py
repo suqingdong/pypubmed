@@ -140,8 +140,12 @@ class Export(object):
                             value = str(value)
                 elif type(value) == dict:
                     value = json.dumps(value, ensure_ascii=False)
-                    
-                _ = sheet.cell(row, col, value=value)
+                
+                try:
+                    _ = sheet.cell(row, col, value=value)
+                except:
+                    _ = sheet.cell(row, col, value=str(value))
+
                 _.fill = PatternFill(start_color=color, end_color=color, fill_type="solid")
 
                 if key in ('pmid', 'pmc', 'doi') and value not in ('.', None):
