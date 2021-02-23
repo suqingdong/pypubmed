@@ -88,7 +88,7 @@ class Eutils(object):
         idlist = result['idlist']
 
         while int(result['retstart']) + int(result['retmax']) < int(result['count']):
-            if limit and int(result['retstart']) + int(result['retmax']) > limit:
+            if limit and len(idlist) >= limit:
                 break
             retstart = int(result['retstart']) + int(result['retmax'])
             params = self.parse_params(term=term, retmode='json', retstart=retstart, retmax=retmax, **kwargs)
