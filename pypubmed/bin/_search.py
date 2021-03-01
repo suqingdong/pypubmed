@@ -21,7 +21,7 @@ examples:
     pypubmed search pmid_list.txt
 ''', fg='yellow')
 @click.command(help=click.style('search with pmid or a term', bold=True, fg='green'), epilog=search_examples, no_args_is_help=True)
-@click.option('-c', '--cited', help='get cited information', default=False, is_flag=True)
+@click.option('-cit', '--cited', help='get cited information', default=False, is_flag=True)
 @click.option('-n', '--no-translate', help='do not translate the abstract', default=False, is_flag=True)
 @click.option('-b', '--batch-size', help='the batch size for efetch', default=10, type=int, show_default=True)
 @click.option('-min', '--min-factor', help='filter with IF', type=float)
