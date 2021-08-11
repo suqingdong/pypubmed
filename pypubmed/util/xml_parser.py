@@ -121,13 +121,14 @@ def parse(xml):
 
             author_list = []
             for author in Article.xpath('AuthorList/Author'):
-                name = [each.text for each in author.xpath('*')][:3]  # LastName, ForeName, Initials
-                author_list.append(' '.join([name[-1], name[0]]))
+                names = [each.text for each in author.xpath('*')][:3]  # LastName, ForeName, Initials
+                names = [n for n in names if n]
+                author_list.append(' '.join([names[-1], names[0]]))
 
                 affiliation = '\n'.join(author.xpath('AffiliationInfo/Affiliation/text()'))
                 mail = re.findall(r'([^\s]+?@.+)\.', str(affiliation))
                 if mail:
-                    mail = '{}:{}'.format(' '.join(name), mail[0])
+                    mail = '{}:{}'.format(' '.join(names), mail[0])
                     author_mail.append(mail)
 
             context['author_mail'] = '\n'.join(author_mail) or '.'
