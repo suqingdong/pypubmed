@@ -5,7 +5,7 @@
 
 ## Installation
 ```bash
-pip3 isntall pypubmed
+pip3 isntall -U pypubmed
 ```
 
 ## Usage
@@ -13,6 +13,12 @@ pip3 isntall pypubmed
 > search Pubmed with term
 ```bash
 pypubmed search --help
+
+# do not translate
+pypubmed search -l 5 ngs
+
+# translate with a local proxies
+pypubmed -p http://127.0.0.1:1081 search ngs -l 5
 ```
 
 ### `advance-search`
@@ -33,7 +39,6 @@ pypubmed citations --help
 - [ ] PDF downloader
 - [ ] GUI application
 - [ ] Local paper manager
-
 
 ## Documents
 > https://pypubmed.readthedocs.io/en/latest/

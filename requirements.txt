@@ -4,7 +4,7 @@ python-dateutil
 w3lib
 click
 prettytable
-webrequests>=1.0.4
-impact_factor>=1.0.8
-simple-loggers>=1.0.4
-simple-googletrans>=1.0.2
+webrequests
+impact_factor
+simple-loggers
+googletranslatepy

@@ -13,8 +13,8 @@ import prettytable
 
 from dateutil.parser import parse as date_parse
 
-from impact_factor import ImpactFactor
-from simple_googletrans import GoogleTrans
+from impact_factor.core import Factor as ImpactFactor
+from googletranslatepy import Translator as GoogleTrans
 from simple_loggers import SimpleLogger
 from webrequests import WebRequest
 
@@ -38,11 +38,14 @@ class Eutils(object):
     logger = SimpleLogger('Eutils')
     IF = ImpactFactor()
 
-    def __init__(self, db='pubmed', service_url='translate.google.cn', api_key=None, **kwargs):
+    def __init__(self, db='pubmed', proxies=None, api_key=None, **kwargs):
         self.db = db
         self.api_key = api_key
         self.validate_api_key()
-        self.TR = GoogleTrans(service_url=service_url)
+        self.TR = GoogleTrans(proxies=proxies)
+
+        self.TR_OK = self.TR.check_proxies()
+
 
     def parse_params(self, **kwargs):
         """
@@ -254,29 +257,21 @@ class Eutils(object):
         else:
             idlist = self.esearch(term, **kwargs)
 
-        # print(kwargs);exit()
-
         articles = self.efetch(idlist, **kwargs)
         for article in articles:
             if impact_factor:
                 res = self.IF.search(article.issn) or self.IF.search(article.e_issn)
-                article.impact_factor = res['factor'] if res else '.'
+                article.impact_factor = res[0]['factor'] if res else '.'
 
             if cited:
                 article.cited = self.get_cited(article.pmid)
 
-            if translate:
+            if translate and self.TR_OK:
                 if translate_cache and translate_cache.get(article.pmid):
                     article.abstract_cn = translate_cache.get(article.pmid)
                 else:
-                    article.abstract_cn = 'translate failed'
-                    n = 0
-                    while n < 5:
-                        n += 1
-                        try:
-                            article.abstract_cn = self.TR.translate(article.abstract)
-                            break
-                        except Exception as e:
-                            print(e)
-                            time.sleep(3)
+                    try:
+                        article.abstract_cn = self.TR.translate(article.abstract)
+                    except Exception as e:
+                        article.abstract_cn = 'translate failed'
             yield article
