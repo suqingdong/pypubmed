@@ -5,7 +5,7 @@
 
 ## Installation
 ```bash
-pip3 isntall -U pypubmed
+python3 -m pip install -U pypubmed
 ```
 
 ## Usage
