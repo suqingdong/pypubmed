@@ -7,4 +7,4 @@ prettytable
 webrequests
 impact_factor
 simple-loggers
-googletranslatepy
+googletranslate-python
