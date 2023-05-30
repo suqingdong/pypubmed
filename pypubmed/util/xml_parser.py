@@ -120,10 +120,12 @@ def parse(xml):
             author_mail = []
 
             author_list = []
+            fullname_author_list = []
             for author in Article.xpath('AuthorList/Author'):
                 names = [each.text for each in author.xpath('*')][:3]  # LastName, ForeName, Initials
                 names = [n for n in names if n]
                 author_list.append(' '.join([names[-1], names[0]]))
+                fullname_author_list.append(' '.join([names[1], names[0]]))
 
                 affiliation = '\n'.join(author.xpath('AffiliationInfo/Affiliation/text()'))
                 mail = re.findall(r'([^\s]+?@.+)\.', str(affiliation))
@@ -140,6 +142,7 @@ def parse(xml):
                     context['author_last'] = authors[-1]
 
             context['authors'] = ',\n'.join(author_list)
+            context['fullname_authors'] = ',\n'.join(fullname_author_list)
 
             context['pub_types'] = Article.xpath('PublicationTypeList/PublicationType/text()')
             context['doi'] = PubmedArticle.findtext('PubmedData/ArticleIdList/ArticleId[@IdType="doi"]')
