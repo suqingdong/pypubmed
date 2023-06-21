@@ -260,7 +260,11 @@ class Eutils(object):
         articles = self.efetch(idlist, **kwargs)
         for article in articles:
             if impact_factor:
-                res = self.IF.search(article.issn) or self.IF.search(article.e_issn)
+                res = None
+                if article.issn:
+                    res = self.IF.search(article.issn)
+                if not res and article.e_issn:
+                    res = self.IF.search(article.e_issn)
                 article.impact_factor = res[0]['factor'] if res else '.'
 
             if cited:
