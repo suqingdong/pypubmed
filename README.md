@@ -42,3 +42,6 @@ pypubmed citations --help
 
 ## Documents
 > https://pypubmed.readthedocs.io/en/latest/
+
+## Star History
+[![Star History Chart](https://api.star-history.com/svg?repos=suqingdong/pypubmed&type=Date)](https://star-history.com/#suqingdong/pypubmed&Date)
