@@ -131,6 +131,14 @@ def parse(xml):
                     mail = '{}:{}'.format(' '.join(names), mail[0])
                     author_mail.append(mail)
 
+            # affiliation list
+            affiliations = Article.xpath('AuthorList/Author/AffiliationInfo/Affiliation/text()')
+            affiliation_unique_list = []
+            for aff in affiliations:
+                if aff not in affiliation_unique_list:
+                    affiliation_unique_list.append(aff)
+            context['affiliations'] = '\n'.join((f'{n}. {aff}' for n, aff in enumerate(affiliation_unique_list, 1)))
+
             context['author_mail'] = '\n'.join(author_mail) or '.'
             authors = Article.xpath('AuthorList/Author/AffiliationInfo/Affiliation/text()')
             context['author_first'] = context['author_last'] = '.'
