@@ -123,21 +123,13 @@ def parse(xml):
             for author in Article.xpath('AuthorList/Author'):
                 names = [each.text for each in author.xpath('*')][:3]  # LastName, ForeName, Initials
                 names = [n for n in names if n]
-                author_list.append(' '.join([names[-1], names[0]]))
+                author_list.append(' '.join([names[1], names[0]]))
 
                 affiliation = '\n'.join(author.xpath('AffiliationInfo/Affiliation/text()'))
                 mail = re.findall(r'([^\s]+?@.+)\.', str(affiliation))
                 if mail:
-                    mail = '{}:{}'.format(' '.join(names), mail[0])
+                    mail = '{}: {}'.format(' '.join(names), mail[0])
                     author_mail.append(mail)
-
-            # affiliation list
-            affiliations = Article.xpath('AuthorList/Author/AffiliationInfo/Affiliation/text()')
-            affiliation_unique_list = []
-            for aff in affiliations:
-                if aff not in affiliation_unique_list:
-                    affiliation_unique_list.append(aff)
-            context['affiliations'] = '\n'.join((f'{n}. {aff}' for n, aff in enumerate(affiliation_unique_list, 1)))
 
             context['author_mail'] = '\n'.join(author_mail) or '.'
             authors = Article.xpath('AuthorList/Author/AffiliationInfo/Affiliation/text()')
@@ -147,7 +139,15 @@ def parse(xml):
                 if len(authors) > 1:
                     context['author_last'] = authors[-1]
 
-            context['authors'] = ',\n'.join(author_list)
+            context['authors'] = '\n'.join(author_list)
+
+            # affiliation list
+            affiliations = Article.xpath('AuthorList/Author/AffiliationInfo/Affiliation/text()')
+            affiliation_unique_list = []
+            for aff in affiliations:
+                if aff not in affiliation_unique_list:
+                    affiliation_unique_list.append(aff)
+            context['affiliations'] = '\n'.join((f'{n}. {aff}' for n, aff in enumerate(affiliation_unique_list, 1)))
 
             context['pub_types'] = Article.xpath('PublicationTypeList/PublicationType/text()')
             context['doi'] = PubmedArticle.findtext('PubmedData/ArticleIdList/ArticleId[@IdType="doi"]')
