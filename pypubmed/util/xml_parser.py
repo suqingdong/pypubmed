@@ -2,6 +2,7 @@
 import os
 import re
 import datetime
+from collections import defaultdict
 
 try:
     import lxml.etree as ET
@@ -120,6 +121,7 @@ def parse(xml):
             author_mail = []
 
             author_list = []
+            affiliation_author_map = defaultdict(list)
             for author in Article.xpath('AuthorList/Author'):
 
                 last_name = author.findtext('LastName')
@@ -130,8 +132,11 @@ def parse(xml):
         
                 author_list.append(author_name)
 
-                affiliation = '\n'.join(author.xpath('AffiliationInfo/Affiliation/text()'))
-                mail = re.findall(r'([^\s]+?@.+)\.', str(affiliation))
+                for aff in author.xpath('AffiliationInfo/Affiliation/text()'):
+                    affiliation_author_map[aff].append(author_name)
+
+                affiliation_info = '\n'.join(author.xpath('AffiliationInfo/Affiliation/text()'))
+                mail = re.findall(r'([^\s]+?@.+)\.', str(affiliation_info))
                 if mail:
                     mail = '{}: {}'.format(author_name, mail[0])
                     author_mail.append(mail)
@@ -148,11 +153,16 @@ def parse(xml):
 
             # affiliation list
             affiliations = Article.xpath('AuthorList/Author/AffiliationInfo/Affiliation/text()')
+
             affiliation_unique_list = []
             for aff in affiliations:
                 if aff not in affiliation_unique_list:
                     affiliation_unique_list.append(aff)
-            context['affiliations'] = '\n'.join((f'{n}. {aff}' for n, aff in enumerate(affiliation_unique_list, 1)))
+
+            context['affiliations'] = '\n'.join((
+                f'{n}. {aff} - {affiliation_author_map.get(aff)}' 
+                for n, aff in enumerate(affiliation_unique_list, 1)
+            ))
 
             context['pub_types'] = Article.xpath('PublicationTypeList/PublicationType/text()')
             context['doi'] = PubmedArticle.findtext('PubmedData/ArticleIdList/ArticleId[@IdType="doi"]')
