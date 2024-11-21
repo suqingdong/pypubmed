@@ -29,6 +29,7 @@ class Eutils(object):
             db          database name
             api_key     api_key or NCBI_API_KEY in environment
 
+
         optional params:
             term        term for esearch
             id          id(s) for efetch
@@ -38,8 +39,9 @@ class Eutils(object):
     logger = SimpleLogger('Eutils')
     IF = ImpactFactor()
 
-    def __init__(self, db='pubmed', proxies=None, api_key=None, **kwargs):
+    def __init__(self, db='pubmed', search_db='pubmed', proxies=None, api_key=None, **kwargs):
         self.db = db
+        self.search_db = search_db
         self.api_key = api_key
         self.validate_api_key()
         self.TR = GoogleTrans(proxies=proxies)
@@ -74,6 +76,7 @@ class Eutils(object):
         url = self.base_url + 'esearch.fcgi'
         params = self.parse_params(term=term, retmode='json', retstart=retstart, retmax=retmax, **kwargs)
 
+        params['db'] = self.search_db
         # print(params)
 
         result = WebRequest.get_response(url, params=params).json()['esearchresult']

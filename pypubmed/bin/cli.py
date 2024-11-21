@@ -27,13 +27,14 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
               type=click.Choice(log_level_maps.keys()))
 @click.option('-k', '--api-key', help='the api_key of NCBI Pubmed, NCBI_API_KEY environment is available',
               envvar='NCBI_API_KEY', show_envvar=True)
+@click.option('-d', '--db', help='the database to search', type=click.Choice(['pubmed', 'pmc']), default='pubmed', show_default=True)
 @click.option('-p', '--proxies', help='the proxies for google translate, eg. http://127.0.0.1:1080',)
 @click.version_option(version=version_info['version'], prog_name='pypubmed')
 @click.pass_context
 def cli(ctx, **kwargs):
 
     kwargs['log_level'] = log_level_maps[kwargs['log_level']]
-    e = Eutils(api_key=kwargs['api_key'], proxies=kwargs['proxies'])
+    e = Eutils(api_key=kwargs['api_key'], proxies=kwargs['proxies'], search_db=kwargs['db'])
     e.logger.level = int(kwargs['log_level'])
     ctx.obj = {
         'eutils': e
