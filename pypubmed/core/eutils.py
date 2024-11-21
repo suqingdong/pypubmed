@@ -17,9 +17,10 @@ from impact_factor.core import Factor as ImpactFactor
 from googletranslatepy import Translator as GoogleTrans
 from simple_loggers import SimpleLogger
 from webrequests import WebRequest
+import pmc_id_converter
 
 
-from pypubmed.util import xml_parser
+from pypubmed.util import pubmed_xml_parser, pmc_xml_parser
 from pypubmed.core.article import Article
 
 
@@ -39,13 +40,14 @@ class Eutils(object):
     logger = SimpleLogger('Eutils')
     IF = ImpactFactor()
 
-    def __init__(self, db='pubmed', search_db='pubmed', proxies=None, api_key=None, **kwargs):
+    def __init__(self, db='pubmed', convert_pmc=False, proxies=None, api_key=None, **kwargs):
         self.db = db
-        self.search_db = search_db
         self.api_key = api_key
         self.validate_api_key()
-        self.TR = GoogleTrans(proxies=proxies)
+        self.convert_pmc = convert_pmc
+        self.xml_parser = pubmed_xml_parser if db == 'pubmed' else pmc_xml_parser
 
+        self.TR = GoogleTrans(proxies=proxies)
         self.TR_OK = self.TR.check_proxies()
 
 
@@ -76,7 +78,6 @@ class Eutils(object):
         url = self.base_url + 'esearch.fcgi'
         params = self.parse_params(term=term, retmode='json', retstart=retstart, retmax=retmax, **kwargs)
 
-        params['db'] = self.search_db
         # print(params)
 
         result = WebRequest.get_response(url, params=params).json()['esearchresult']
@@ -124,14 +125,32 @@ class Eutils(object):
         self.logger.info('fetching start: total {}, batch_size: {}'.format(len(ids), batch_size))
 
         for n in range(0, len(ids), batch_size):
-            _id = ','.join(ids[n:n+batch_size])
+            id_list = ids[n:n+batch_size]
+            if self.db == 'pmc' and self.convert_pmc:
+                pmid_list = []
+                for i in id_list:
+                    result = pmc_id_converter.API.idconv(f'PMC{i}')[0]
+                    pmid = result.data.get('pmid')
+                    if pmid:
+                        pmid_list.append(pmid)
+                    else:
+                        self.logger.warning(f'no pmid for pmc: {i}')
+                id_list = pmid_list
+
+            _id = ','.join(id_list)
 
             self.logger.debug(f'fetching xml: {n+1} - {n+batch_size}')
             params = self.parse_params(id=_id, retmode='xml')
+
+            if self.db == 'pmc' and self.convert_pmc:
+                params['db'] = 'pubmed'
+                self.xml_parser = pubmed_xml_parser
+
             xml = WebRequest.get_response(url, params=params).text
             
             self.logger.debug(f'parsing xml: {n+1} - {n+batch_size}')
-            for context in xml_parser.parse(xml):
+            for context in self.xml_parser.parse(xml):
+                
                 article = Article(**context)
                 yield article
 

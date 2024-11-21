@@ -8,3 +8,4 @@ webrequests
 impact_factor
 simple-loggers
 googletranslate-python
+pmc_id_converter

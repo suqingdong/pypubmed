@@ -32,7 +32,7 @@ examples:
 
 @click.option('-c', '--cache', help='store translated result to a cache file', is_flag=True)
 @click.option('-s', '--retstart', help='the number of start', type=int, default=0, show_default=True)
-
+@click.option('--convert-pmc', help='convert pmc to pmid', is_flag=True)
 @click.argument('term', nargs=1)
 @click.pass_obj
 def search(obj, **kwargs):
@@ -44,11 +44,15 @@ def search(obj, **kwargs):
         with safe_open(cache_file, 'rb') as f:
             translate_cache = pickle.load(f)
 
-    articles = obj['eutils'].search(translate=not kwargs['no_translate'], translate_cache=translate_cache, **kwargs)
+    eutils = obj['eutils']
+    if kwargs['convert_pmc']:
+        eutils.convert_pmc = True
+
+    articles = eutils.search(translate=not kwargs['no_translate'], translate_cache=translate_cache, **kwargs)
 
     try:
         for n, article in enumerate(articles, 1):
-            obj['eutils'].logger.debug(f'{n}. {article}')
+            eutils.logger.debug(f'{n}. {article}')
 
             # store translated result to cache file
             if kwargs['cache']:
@@ -72,12 +76,12 @@ def search(obj, **kwargs):
         pass
 
     if kwargs['min_factor']:
-        obj['eutils'].logger.info('A total of {} articles were found, {} remaining after filtering IF>={}'.format(n, len(data), kwargs['min_factor']))
+        eutils.logger.info('A total of {} articles were found, {} remaining after filtering IF>={}'.format(n, len(data), kwargs['min_factor']))
 
     if kwargs['cache']:
         with safe_open(cache_file, 'wb') as out:
             pickle.dump(translate_cache, out)
-        obj['eutils'].logger.debug(f'save cache file: {cache_file}')
+        eutils.logger.debug(f'save cache file: {cache_file}')
 
     Export(data, **kwargs).export()
 

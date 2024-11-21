@@ -34,7 +34,7 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 def cli(ctx, **kwargs):
 
     kwargs['log_level'] = log_level_maps[kwargs['log_level']]
-    e = Eutils(api_key=kwargs['api_key'], proxies=kwargs['proxies'], search_db=kwargs['db'])
+    e = Eutils(api_key=kwargs['api_key'], proxies=kwargs['proxies'], db=kwargs['db'])
     e.logger.level = int(kwargs['log_level'])
     ctx.obj = {
         'eutils': e
