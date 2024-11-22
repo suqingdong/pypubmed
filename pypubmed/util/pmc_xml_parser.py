@@ -41,7 +41,7 @@ def parse_abstract(abstracts):
                 real_abstract = item
                 break
     
-        if real_abstract:
+        if real_abstract is not None:
             abstract_list = []
             for part in real_abstract.findall('sec'):
                 label = part.findtext('title')
@@ -131,9 +131,15 @@ def parse(xml):
                 if pubdate is not None:
                     break
           
-            year = pubdate.findtext('year')
-            month = pubdate.findtext('month')
-            day = pubdate.findtext('day')
+            if pubdate is not None:
+                year = pubdate.findtext('year')
+                month = pubdate.findtext('month') or '1'
+                day = pubdate.findtext('day') or '1'
+            else:
+                pub_date = article_meta.find('pub-date')
+                year = pub_date.findtext('year')
+                month = pub_date.findtext('month') or '1'
+                day = pub_date.findtext('day') or '1'
 
             context['year'] = year
             context['pubdate'] = datetime.datetime(int(year), int(month), int(day)).strftime('%Y/%m/%d')
