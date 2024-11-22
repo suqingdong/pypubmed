@@ -14,6 +14,21 @@ python3 -m pip install -U pypubmed
 ```bash
 pypubmed search --help
 
+########## search pubmed ##########
+pypubmed search ngs -l 5 -o ngs.xlsx
+pypubmed search 'NGS[Title] AND Disease[Title/Abstract]' -o ngs_disease.xlsx
+pypubmed search 1,2,3,4
+pypubmed search pmid_list.txt
+
+########## search pmc ##########
+# parse pmc xml, maybe network error
+pypubmed -d pmc search PMC10914497,PMC11572642
+pypubmed -d pmc search pmcid_list.txt
+pypubmed -d pmc search '(single cell) OR (scrna) OR (scRNA seq)'
+
+# convert pmcid to pmid, then parse pubmed xml, some pmcid may not have pmid
+pypubmed -d pmc search '(single cell) OR (scrna) OR (scRNA seq)' --convert-pmc
+
 # do not translate
 pypubmed search -l 5 ngs
 

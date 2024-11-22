@@ -2,16 +2,10 @@
     https://www.ncbi.nlm.nih.gov/books/NBK25497/
 """
 import os
-import sys
-import json
-import time
+import re
 import textwrap
-import datetime
-
 import click
 import prettytable
-
-from dateutil.parser import parse as date_parse
 
 from impact_factor.core import Factor as ImpactFactor
 from googletranslatepy import Translator as GoogleTrans
@@ -274,7 +268,7 @@ class Eutils(object):
         """
         if os.path.isfile(term):
             idlist = open(term).read().strip().split()
-        elif all(each.isdigit() for each in term.split(',')):
+        elif all(re.match(r'^(PMC)*\d+$', each, re.I) for each in term.split(',')):
             idlist = term.split(',')
         else:
             idlist = self.esearch(term, **kwargs)

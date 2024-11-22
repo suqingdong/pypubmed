@@ -12,13 +12,22 @@ from pypubmed.core.export import Export
 search_examples = click.style('''
 examples:
 
+\b
+    ########## search pubmed ##########
     pypubmed search ngs -l 5 -o ngs.xlsx
-
     pypubmed search 'NGS[Title] AND Disease[Title/Abstract]' -o ngs_disease.xlsx
-
     pypubmed search 1,2,3,4
-
     pypubmed search pmid_list.txt
+\b
+    ########## search pmc ##########
+    # parse pmc xml, maybe network error
+    pypubmed -d pmc search PMC10914497,PMC11572642
+    pypubmed -d pmc search pmcid_list.txt
+    pypubmed -d pmc search '(single cell) OR (scrna) OR (scRNA seq)'
+\b
+    # convert pmcid to pmid, then parse pubmed xml, some pmcid may not have pmid
+    pypubmed -d pmc search '(single cell) OR (scrna) OR (scRNA seq)' --convert-pmc
+
 ''', fg='yellow')
 @click.command(help=click.style('search with pmid or a term', bold=True, fg='green'), epilog=search_examples, no_args_is_help=True)
 @click.option('-cit', '--cited', help='get cited information', default=False, is_flag=True)
@@ -32,7 +41,7 @@ examples:
 
 @click.option('-c', '--cache', help='store translated result to a cache file', is_flag=True)
 @click.option('-s', '--retstart', help='the number of start', type=int, default=0, show_default=True)
-@click.option('--convert-pmc', help='convert pmc to pmid', is_flag=True)
+@click.option('--convert-pmc', help='convert pmcid to pmid, then parse pubmed xml', is_flag=True)
 @click.argument('term', nargs=1)
 @click.pass_obj
 def search(obj, **kwargs):

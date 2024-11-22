@@ -35,20 +35,24 @@ def parse_abstract(abstracts):
         abstract = ''.join(abstracts[0].itertext()) or '.'
         abstract = abstract.replace('\n', ' ')
     else:
+        real_abstract = None
         for item in abstracts:
             if item.find('sec') is not None:
                 real_abstract = item
                 break
     
-        abstracts = []
-        for part in real_abstract.findall('sec'):
-            label = part.findtext('title')
-            text = ''.join(part.itertext())
-            if label:
-                abstracts.append('{}: {}'.format(label, text))
-            else:
-                abstracts.append(text)
-        abstract = '\n'.join(abstracts)
+        if real_abstract:
+            abstract_list = []
+            for part in real_abstract.findall('sec'):
+                label = part.findtext('title')
+                text = ''.join(part.itertext())
+                if label:
+                    abstract_list.append('{}: {}'.format(label, text))
+                else:
+                    abstract_list.append(text)
+            abstract = '\n'.join(abstract_list)
+        else:
+            abstract = '\n'.join(''.join(part.itertext()) for part in abstracts)
 
     # ===========
     # remove tags
@@ -91,17 +95,42 @@ def parse(xml):
 
             front = article.find('front')
             article_meta = front.find('article-meta')
+            journal_meta = front.find('journal-meta')
+            
+            context['pmc'] = 'PMC' + article_meta.findtext('article-id[@pub-id-type="pmc"]')
+            context['doi'] = article_meta.findtext('article-id[@pub-id-type="doi"]')
+            context['pmid'] = article_meta.findtext('article-id[@pub-id-type="pmid"]')
+            print(context['pmc'])
 
-            issn = front.find('journal-meta/issn')
-            context['e_issn'] = issn.text
-            context['issn'] = issn.text
-            context['title'] = article_meta.findtext('title-group/article-title').replace('\n', ' ')
+            issn = journal_meta.find('issn[@pub-type="ppub"]')
+            if issn is None:
+                issn = journal_meta.find('issn')
+            e_issn = journal_meta.find('issn[@pub-type="epub"]')
+            if e_issn is None:
+                e_issn = journal_meta.find('issn')
 
-            context['journal'] = front.findtext('journal-meta/journal-title-group/journal-title')
-            context['iso_abbr'] = front.findtext('journal-meta/journal-id[@journal-id-type="iso-abbrev"]')
-            context['med_abbr'] = front.findtext('journal-meta/journal-id[@journal-id-type="nlm-ta"]')
+            context['e_issn'] = e_issn.text if e_issn is not None else '.'
+            context['issn'] = issn.text if issn is not None else '.'
 
-            pubdate = front.find('article-meta/pub-date[@pub-type="epub"]')
+            article_title = article_meta.find('title-group/article-title')
+            context['title'] = ''.join(article_title.itertext()).strip().replace('\n', ' ')
+
+            context['journal'] = journal_meta.findtext('journal-title-group/journal-title')
+            context['iso_abbr'] = journal_meta.findtext('journal-id[@journal-id-type="iso-abbrev"]')
+            context['med_abbr'] = journal_meta.findtext('journal-id[@journal-id-type="nlm-ta"]')
+
+
+            pub_date_path_list = [
+                'pub-date[@pub-type="epub"]', 
+                'pub-date[@date-type="pub"]', 
+                'pub-date[@pub-type="pmc-release"]',    
+                'pub-date[@pub-type="ppub"]', 
+            ]
+            for pub_date_path in pub_date_path_list:
+                pubdate = article_meta.find(pub_date_path)
+                if pubdate is not None:
+                    break
+          
             year = pubdate.findtext('year')
             month = pubdate.findtext('month')
             day = pubdate.findtext('day')
@@ -115,22 +144,20 @@ def parse(xml):
             context['issue'] = article_meta.findtext('issue')
 
             context['keywords'] = article_meta.xpath('kwd-group/kwd/text()')
-            context['pub_status'] = issn.attrib.get('pub-type')
+            context['pub_status'] = '.' # do not know which field to use
 
             context['abstract'] = parse_abstract(article_meta.findall('abstract'))
 
             context['pub_types'] = []  # do not know which field to use
 
-            context['pmc'] = 'PMC' + article_meta.findtext('article-id[@pub-id-type="pmc"]')
-            context['doi'] = article_meta.findtext('article-id[@pub-id-type="doi"]')
-
             # author emails
             cor_email_map = {}
             cor_list = article_meta.findall('author-notes/corresp')
             for cor in cor_list:
-                cor_id = cor.attrib['id']
-                email = cor.findtext('email')
-                cor_email_map[cor_id] = email
+                cor_id = cor.attrib.get('id')
+                if cor_id:
+                    email = cor.findtext('email')
+                    cor_email_map[cor_id] = email
 
             # authors
             author_list = []
@@ -154,13 +181,20 @@ def parse(xml):
                         author_mail.append(mail)
 
             context['authors'] = '\n'.join(author_list)
-            context['author_mail'] = '\n'.join(author_mail) or '.'
+
+            context['author_mail'] = '.'
+            if not author_mail:
+                corresp = article_meta.find('author-notes/corresp')
+                if corresp is not None:
+                    context['author_mail'] = ''.join(corresp.itertext()).strip()
+            else:
+                context['author_mail'] = '\n'.join(author_mail)
 
             context['author_first'] = context['author_last'] = '.'
-            if authors:
-                context['author_first'] = authors[0]
-                if len(authors) > 1:
-                    context['author_last'] = authors[-1]
+            if author_list:
+                context['author_first'] = author_list[0]
+                if len(author_list) > 1:
+                    context['author_last'] = author_list[-1]
 
             # affiliations
             aff_list = []
