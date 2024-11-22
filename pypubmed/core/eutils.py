@@ -4,6 +4,7 @@
 import os
 import re
 import textwrap
+
 import click
 import prettytable
 
@@ -24,7 +25,6 @@ class Eutils(object):
             db          database name
             api_key     api_key or NCBI_API_KEY in environment
 
-
         optional params:
             term        term for esearch
             id          id(s) for efetch
@@ -43,7 +43,6 @@ class Eutils(object):
 
         self.TR = GoogleTrans(proxies=proxies)
         self.TR_OK = self.TR.check_proxies()
-
 
     def parse_params(self, **kwargs):
         """
@@ -79,7 +78,9 @@ class Eutils(object):
         if head:
             return result
 
-        self.logger.info('{count} articles found with term: {querytranslation}'.format(**result))
+        count = result['count']
+        # querytranslation = result['querytranslation']
+        self.logger.info(f'\x1b[1;31m{count}\x1b[0m articles found')
 
         if limit is None and int(result['count']) > 250:
             self.logger.warning('too many results, you can limit output with option "-l/--limit N", '

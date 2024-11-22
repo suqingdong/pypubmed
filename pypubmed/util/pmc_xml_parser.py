@@ -100,7 +100,7 @@ def parse(xml):
             context['pmc'] = 'PMC' + article_meta.findtext('article-id[@pub-id-type="pmc"]')
             context['doi'] = article_meta.findtext('article-id[@pub-id-type="doi"]')
             context['pmid'] = article_meta.findtext('article-id[@pub-id-type="pmid"]')
-            print(context['pmc'])
+            # print(context['pmc'])
 
             issn = journal_meta.find('issn[@pub-type="ppub"]')
             if issn is None:
@@ -118,7 +118,6 @@ def parse(xml):
             context['journal'] = journal_meta.findtext('journal-title-group/journal-title')
             context['iso_abbr'] = journal_meta.findtext('journal-id[@journal-id-type="iso-abbrev"]')
             context['med_abbr'] = journal_meta.findtext('journal-id[@journal-id-type="nlm-ta"]')
-
 
             pub_date_path_list = [
                 'pub-date[@pub-type="epub"]', 
