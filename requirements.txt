@@ -5,7 +5,7 @@ w3lib
 click
 prettytable
 webrequests
-impact_factor
+impact_factor>=1.1.1
 simple-loggers
 googletranslate-python
 pmc_id_converter
